@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SILA — Healthcare Analytics Suite</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=DM+Mono:wght@400;500&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F8FAFC;--bg2:#F1F5F9;--bg3:#fff;
+  --border:#E2E8F0;--border2:#CBD5E1;
+  --text:#0F172A;--text2:#475569;--text3:#94A3B8;
+  --blue:#1E3A8A;--blue2:#3B82F6;--blue-light:#EFF6FF;
+  --green:#166534;--green-light:#F0FDF4;
+  --red:#991B1B;--red-light:#FEF2F2;
+  --amber:#92400E;--amber-light:#FFFBEB;
+  --purple:#5B21B6;--purple-light:#F5F3FF;
+  --r:8px;--rl:12px;
+  --font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+}
+html,body{height:100%;background:var(--bg);font-family:var(--font);color:var(--text);font-size:14px;overflow:hidden}
+
+/* ── AUTH SCREEN ── */
+.auth-screen{position:fixed;inset:0;background:linear-gradient(135deg,#0F172A 0%,#1E3A8A 50%,#1e40af 100%);display:flex;align-items:center;justify-content:center;z-index:100}
+.auth-card{background:#fff;border-radius:20px;padding:40px;width:420px;box-shadow:0 25px 60px rgba(0,0,0,.3)}
+.auth-logo{display:flex;align-items:center;gap:12px;margin-bottom:32px}
+.auth-logo-mark{width:44px;height:44px;background:var(--blue);border-radius:12px;display:flex;align-items:center;justify-content:center}
+.auth-logo-mark i{color:#fff;font-size:22px}
+.auth-logo-text{font-size:22px;font-weight:700;letter-spacing:-.02em}
+.auth-logo-sub{font-size:11px;color:var(--text3);letter-spacing:.05em;margin-top:2px}
+.auth-tabs{display:flex;background:var(--bg2);border-radius:var(--r);padding:3px;margin-bottom:28px}
+.auth-tab{flex:1;padding:8px;text-align:center;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:var(--text2);transition:all .15s}
+.auth-tab.active{background:#fff;color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.auth-form{display:flex;flex-direction:column;gap:14px}
+.auth-label{font-size:12px;font-weight:500;color:var(--text2);margin-bottom:5px;display:block}
+.auth-input{width:100%;padding:10px 13px;border:1px solid var(--border2);border-radius:var(--r);font-size:13px;font-family:var(--font);color:var(--text);background:#fff;outline:none;transition:border-color .15s}
+.auth-input:focus{border-color:var(--blue2)}
+.auth-btn{width:100%;padding:11px;background:var(--blue);color:#fff;border:none;border-radius:var(--r);font-size:14px;font-weight:600;cursor:pointer;font-family:var(--font);transition:background .15s;margin-top:4px}
+.auth-btn:hover{background:#1e40af}
+.auth-btn:disabled{opacity:.6;cursor:not-allowed}
+.auth-error{background:var(--red-light);color:var(--red);border:1px solid #FCA5A5;border-radius:var(--r);padding:9px 12px;font-size:12px}
+.auth-divider{text-align:center;font-size:12px;color:var(--text3);margin:4px 0}
+
+/* ── APP ── */
+.app{display:flex;height:100vh;overflow:hidden}
+.app.hidden{display:none}
+.sidebar{width:240px;min-width:240px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column}
+.logo{padding:16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+.logo-mark{width:32px;height:32px;background:var(--blue);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-mark i{color:#fff;font-size:16px}
+.logo-text{font-size:14px;font-weight:600;letter-spacing:-.01em}
+.logo-sub{font-size:9px;color:var(--text3);letter-spacing:.05em}
+.nav{padding:10px 8px}
+.nav-section{font-size:10px;color:var(--text3);letter-spacing:.06em;padding:12px 10px 5px;font-weight:500}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:var(--r);cursor:pointer;font-size:12px;color:var(--text2);transition:all .15s;margin-bottom:1px;border:1px solid transparent}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{background:var(--bg3);color:var(--blue);font-weight:500;border-color:var(--border)}
+.nav-item i{font-size:15px;width:16px;text-align:center;flex-shrink:0}
+.sessions-list{flex:1;overflow-y:auto;padding:0 8px}
+.session-item{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border-radius:var(--r);cursor:pointer;font-size:12px;color:var(--text2);transition:all .15s;margin-bottom:1px;gap:6px}
+.session-item:hover{background:var(--bg3);color:var(--text)}
+.session-item.active{background:var(--bg3);color:var(--blue);font-weight:500}
+.session-title{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.session-del{opacity:0;font-size:13px;color:var(--text3);padding:2px;border-radius:4px;flex-shrink:0;background:none;border:none;cursor:pointer}
+.session-item:hover .session-del{opacity:1}
+.session-del:hover{color:var(--red);background:var(--red-light)}
+.new-session-btn{display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:var(--r);cursor:pointer;font-size:12px;color:var(--blue);font-weight:500;margin:4px 8px;border:1px dashed var(--border2);background:none;font-family:var(--font);transition:all .15s;width:calc(100% - 16px)}
+.new-session-btn:hover{background:var(--blue-light);border-color:var(--blue)}
+.sidebar-bottom{padding:12px 16px;border-top:1px solid var(--border)}
+.user-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.user-avatar{width:30px;height:30px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.user-avatar span{font-size:11px;font-weight:600;color:#fff}
+.user-name{font-size:12px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.user-role{font-size:10px;color:var(--text3)}
+.logout-btn{width:100%;padding:7px;border-radius:var(--r);border:1px solid var(--border2);background:none;font-size:12px;font-weight:500;color:var(--text2);cursor:pointer;font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:5px;transition:all .15s}
+.logout-btn:hover{background:var(--red-light);color:var(--red);border-color:#FCA5A5}
+
+/* ── MAIN ── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.topbar{padding:10px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--bg3);flex-shrink:0}
+.tabs{display:flex;gap:2px;background:var(--bg2);padding:3px;border-radius:var(--r);border:1px solid var(--border)}
+.tab{padding:5px 13px;border-radius:6px;font-size:12px;cursor:pointer;color:var(--text2);transition:all .15s;font-weight:500}
+.tab:hover{color:var(--text)}
+.tab.active{background:var(--bg3);color:var(--text);box-shadow:0 1px 2px rgba(0,0,0,.07)}
+.hybrid-badge{font-size:10px;color:#22C55E;font-weight:600;letter-spacing:.04em;display:flex;align-items:center;gap:5px}
+.hybrid-badge::before{content:'';width:6px;height:6px;background:#22C55E;border-radius:50%}
+.view{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.view.hidden{display:none}
+
+/* ── CHAT ── */
+.chat-msgs{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:14px}
+.msg{display:flex;flex-direction:column;max-width:78%}
+.msg.bot{align-self:flex-start}
+.msg.user{align-self:flex-end}
+.msg-av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:5px;background:var(--blue-light);border:1px solid var(--border)}
+.msg-av i{font-size:14px;color:var(--blue)}
+.bubble{padding:11px 14px;border-radius:14px;font-size:13px;line-height:1.55}
+.msg.bot .bubble{background:var(--bg3);border:1px solid var(--border);border-radius:4px 14px 14px 14px}
+.msg.user .bubble{background:var(--blue);color:#fff;border-radius:14px 14px 4px 14px}
+.chart-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--rl);padding:14px;margin-top:10px;max-width:420px}
+.chart-title{font-size:11px;font-weight:600;color:var(--text2);margin-bottom:10px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+.chip{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500}
+.chip.good{background:var(--green-light);color:var(--green)}
+.chip.warn{background:var(--amber-light);color:var(--amber)}
+.chip.neutral{background:var(--bg2);color:var(--text2)}
+.typing{display:flex;gap:4px;padding:2px 0;align-items:center}
+.typing span{width:6px;height:6px;border-radius:50%;background:var(--text3);animation:bounce 1.2s infinite}
+.typing span:nth-child(2){animation-delay:.2s}
+.typing span:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,80%,100%{opacity:.25;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
+.chat-footer{padding:10px 16px 14px;border-top:1px solid var(--border);background:var(--bg3);flex-shrink:0}
+.prompt-chips{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:9px}
+.p-chip{padding:4px 11px;border-radius:20px;font-size:11px;border:1px solid var(--border2);cursor:pointer;color:var(--text2);background:var(--bg2);transition:all .15s;display:flex;align-items:center;gap:4px;white-space:nowrap}
+.p-chip:hover{background:var(--blue-light);color:var(--blue);border-color:var(--blue2)}
+.input-row{display:flex;gap:8px}
+.chat-in{flex:1;padding:9px 14px;border-radius:var(--rl);border:1px solid var(--border2);background:var(--bg3);font-size:13px;color:var(--text);font-family:var(--font);outline:none;transition:border-color .15s}
+.chat-in:focus{border-color:var(--blue)}
+.send-btn{padding:9px 18px;background:var(--blue);color:#fff;border:none;border-radius:var(--rl);font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:6px;transition:background .15s}
+.send-btn:hover{background:#1e40af}
+
+/* ── CATALOG ── */
+.catalog-scroll{flex:1;overflow-y:auto;padding:18px}
+.cat-h1{font-size:22px;font-weight:700;letter-spacing:-.02em;margin-bottom:4px}
+.cat-sub{font-size:12px;color:var(--text2);margin-bottom:16px}
+.search-row{display:flex;gap:6px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.sw{position:relative;flex:1;min-width:150px}
+.sw i{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:14px;pointer-events:none}
+.s-in{width:100%;padding:7px 10px 7px 32px;border:1px solid var(--border2);border-radius:var(--r);font-size:13px;background:var(--bg3);color:var(--text);font-family:var(--font);outline:none}
+.s-in:focus{border-color:var(--blue)}
+.fb{padding:6px 12px;border-radius:var(--r);font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--bg2);color:var(--text2);font-family:var(--font);transition:all .15s}
+.fb.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.fb:hover:not(.active){background:var(--bg3)}
+.dom-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}
+.dom-pill{font-size:10px;font-weight:600;padding:4px 12px;border-radius:20px;letter-spacing:.04em}
+.dom-pill.op{background:var(--blue-light);color:var(--blue)}
+.dom-pill.cl{background:var(--red-light);color:var(--red)}
+.dom-pill.qa{background:var(--amber-light);color:var(--amber)}
+.dom-pill.fi{background:var(--green-light);color:var(--green)}
+.dom-pill.su{background:var(--purple-light);color:var(--purple)}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(178px,1fr));gap:10px;margin-bottom:22px}
+.kpi-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--rl);padding:14px;cursor:pointer;transition:all .15s;display:flex;flex-direction:column}
+.kpi-card:hover{border-color:var(--border2);transform:translateY(-1px);box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.ki{width:34px;height:34px;border-radius:var(--r);display:flex;align-items:center;justify-content:center;margin-bottom:9px}
+.ki i{font-size:17px}
+.ki.op{background:var(--blue-light)} .ki.op i{color:var(--blue)}
+.ki.cl{background:var(--red-light)} .ki.cl i{color:var(--red)}
+.ki.qa{background:var(--amber-light)} .ki.qa i{color:var(--amber)}
+.ki.fi{background:var(--green-light)} .ki.fi i{color:var(--green)}
+.ki.su{background:var(--purple-light)} .ki.su i{color:var(--purple)}
+.run-a{display:inline-flex;align-items:center;gap:3px;font-size:11px;color:var(--text2);border:1px solid var(--border);border-radius:20px;padding:3px 9px;cursor:pointer;margin-bottom:7px;background:var(--bg2);transition:all .15s;font-family:var(--font)}
+.run-a:hover{color:var(--blue);border-color:var(--blue);background:var(--blue-light)}
+.kpi-n{font-size:13px;font-weight:600;margin-bottom:3px}
+.kpi-d{font-size:11px;color:var(--text2);line-height:1.44;flex:1;margin-bottom:9px}
+.bench{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text3)}
+.bench-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+/* ── LOADER ── */
+.loader-scroll{flex:1;overflow-y:auto;padding:18px}
+.db-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.dbc{border:1px solid var(--border);border-radius:var(--rl);padding:14px;background:var(--bg3);transition:all .2s}
+.dbc.loaded{border-color:#22C55E;background:#F0FDF4}
+.dbc-top{display:flex;align-items:flex-start;gap:9px;margin-bottom:8px}
+.d-ico{width:30px;height:30px;border-radius:var(--r);background:var(--blue-light);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.d-ico i{font-size:14px;color:var(--blue)}
+.d-name{font-size:13px;font-weight:600;margin-bottom:1px}
+.d-file{font-size:10px;color:var(--text3);font-family:var(--mono)}
+.d-desc{font-size:11px;color:var(--text2);line-height:1.4;margin-bottom:7px}
+.d-fields{font-size:10px;color:var(--text3);font-family:var(--mono);background:var(--bg2);border-radius:5px;padding:5px 8px;margin-bottom:9px;line-height:1.5;word-break:break-all}
+.d-btns{display:flex;gap:6px}
+.d-up{flex:1;padding:6px;border-radius:var(--r);font-size:11px;font-weight:500;border:1px solid var(--blue);cursor:pointer;background:var(--blue);color:#fff;text-align:center;font-family:var(--font);transition:all .15s}
+.d-tm{flex:1;padding:6px;border-radius:var(--r);font-size:11px;font-weight:500;border:1px solid var(--border2);cursor:pointer;background:var(--bg2);color:var(--text2);font-family:var(--font);transition:all .15s}
+.d-ok{display:flex;align-items:center;gap:4px;font-size:10px;color:#16A34A;margin-top:6px;font-weight:500}
+.ldr-foot{display:flex;gap:8px;margin-top:4px}
+.ldr-btn{flex:1;padding:9px;border-radius:var(--r);font-size:12px;font-weight:500;border:1px solid var(--border2);cursor:pointer;background:var(--bg3);color:var(--text2);font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:6px;transition:all .15s}
+.ldr-btn:hover{background:var(--bg2)}
+.fb-box{margin-top:10px;font-size:12px}
+.fb-ok{padding:9px 12px;border-radius:var(--r);background:var(--green-light);color:var(--green);border:1px solid #86EFAC}
+.fb-err{padding:9px 12px;border-radius:var(--r);background:var(--red-light);color:var(--red);border:1px solid #FCA5A5}
+
+/* ── INTEL ── */
+.intel{width:238px;min-width:238px;background:var(--bg2);border-left:1px solid var(--border);overflow-y:auto;padding:14px}
+.intel-title{font-size:13px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.intel-title i{color:#D97706;font-size:14px}
+.i-sec{margin-bottom:14px}
+.i-sec-title{font-size:11px;font-weight:600;margin-bottom:6px;display:flex;align-items:center;gap:5px;color:var(--text2)}
+.i-sec-title i{font-size:13px}
+.al{padding:8px 10px;border-radius:var(--r);margin-bottom:5px;font-size:11px;line-height:1.5}
+.al.info{background:var(--blue-light);color:#1e40af;border:1px solid #BFDBFE}
+.al.success{background:var(--green-light);color:var(--green);border:1px solid #86EFAC}
+.al.warn{background:var(--amber-light);color:var(--amber);border:1px solid #FCD34D}
+.al.danger{background:var(--red-light);color:var(--red);border:1px solid #FCA5A5}
+.al strong{display:block;font-weight:600;margin-bottom:2px}
+.lm{display:flex;align-items:center;justify-content:space-between;padding:5px 8px;border-radius:var(--r);background:var(--bg3);border:1px solid var(--border);margin-bottom:4px}
+.lmk{font-size:11px;color:var(--text2)}
+.lmv{font-size:11px;font-weight:600}
+.lmv.good{color:#16A34A}.lmv.warn{color:#D97706}.lmv.bad{color:#DC2626}
+
+.saving{font-size:10px;color:var(--text3);display:flex;align-items:center;gap:4px;padding:2px 0}
+.saving i{font-size:12px}
+</style>
+</head>
+<body>
+
+<!-- AUTH SCREEN -->
+<div class="auth-screen" id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-mark"><i class="ti ti-activity"></i></div>
+      <div>
+        <div class="auth-logo-text">SILA Analytics</div>
+        <div class="auth-logo-sub">HEALTHCARE MIS SUITE</div>
+      </div>
+    </div>
+    <div class="auth-tabs">
+      <div class="auth-tab active" onclick="setAuthTab('login')">Sign In</div>
+      <div class="auth-tab" onclick="setAuthTab('register')">Create Account</div>
+    </div>
+    <div id="auth-error" style="display:none" class="auth-error"></div>
+
+    <!-- LOGIN FORM -->
+    <div id="login-form" class="auth-form">
+      <div>
+        <label class="auth-label">Email address</label>
+        <input class="auth-input" id="login-email" type="email" placeholder="you@hospital.com" autocomplete="email">
+      </div>
+      <div>
+        <label class="auth-label">Password</label>
+        <input class="auth-input" id="login-password" type="password" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button class="auth-btn" id="login-btn" onclick="doLogin()">
+        <i class="ti ti-login"></i> Sign In to SILA
+      </button>
+    </div>
+
+    <!-- REGISTER FORM -->
+    <div id="register-form" class="auth-form" style="display:none">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div>
+          <label class="auth-label">Full name</label>
+          <input class="auth-input" id="reg-name" type="text" placeholder="Dr. Rajesh Kumar">
+        </div>
+        <div>
+          <label class="auth-label">Hospital (optional)</label>
+          <input class="auth-input" id="reg-hospital" type="text" placeholder="AIIMS Delhi">
+        </div>
+      </div>
+      <div>
+        <label class="auth-label">Email address</label>
+        <input class="auth-input" id="reg-email" type="email" placeholder="you@hospital.com">
+      </div>
+      <div>
+        <label class="auth-label">Password</label>
+        <input class="auth-input" id="reg-password" type="password" placeholder="At least 6 characters">
+      </div>
+      <button class="auth-btn" id="register-btn" onclick="doRegister()">
+        <i class="ti ti-user-plus"></i> Create Account
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div class="app hidden" id="app">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="logo">
+      <div class="logo-mark"><i class="ti ti-activity"></i></div>
+      <div>
+        <div class="logo-text">SILA Analytics</div>
+        <div class="logo-sub">HYBRID CORE V4.1</div>
+      </div>
+    </div>
+
+    <div class="nav">
+      <div class="nav-section">WORKSPACE</div>
+      <div class="nav-item active" id="nav-chat" onclick="switchView('chat')"><i class="ti ti-message-circle"></i> SILA Assistant</div>
+      <div class="nav-item" id="nav-catalog" onclick="switchView('catalog')"><i class="ti ti-book-2"></i> KPI Catalog</div>
+      <div class="nav-item" id="nav-loader" onclick="switchView('loader')"><i class="ti ti-database"></i> Data Sources</div>
+    </div>
+
+    <div class="nav-section" style="padding:12px 16px 5px">CHAT HISTORY</div>
+    <button class="new-session-btn" onclick="newSession()"><i class="ti ti-plus"></i> New Session</button>
+    <div class="sessions-list" id="sessions-list"></div>
+
+    <div class="sidebar-bottom">
+      <div class="user-row">
+        <div class="user-avatar"><span id="user-initial">?</span></div>
+        <div>
+          <div class="user-name" id="user-name-display">Loading…</div>
+          <div class="user-role" id="user-role-display">MIS Manager</div>
+        </div>
+      </div>
+      <button class="logout-btn" onclick="doLogout()"><i class="ti ti-logout"></i> Sign Out</button>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:10px">
+        <i class="ti ti-layout-grid" style="color:var(--text2)"></i>
+        <strong style="font-size:13px">Workspace</strong>
+        <div class="tabs">
+          <div class="tab active" id="tab-chat" onclick="switchView('chat')">Chat Agent</div>
+          <div class="tab" id="tab-catalog" onclick="switchView('catalog')">Metric Catalog</div>
+          <div class="tab" id="tab-loader" onclick="switchView('loader')">Data Loader</div>
+        </div>
+      </div>
+      <div class="hybrid-badge">SILA HYBRID CORE V4.1</div>
+    </div>
+
+    <!-- CHAT VIEW -->
+    <div class="view" id="view-chat">
+      <div class="chat-msgs" id="chat-msgs"></div>
+      <div class="chat-footer">
+        <div class="prompt-chips">
+          <div class="p-chip" onclick="fireChip('NABH Compliance Score')"><i class="ti ti-sparkles" style="font-size:10px"></i>NABH Score</div>
+          <div class="p-chip" onclick="fireChip('Hand hygiene rate')"><i class="ti ti-sparkles" style="font-size:10px"></i>Hand Hygiene</div>
+          <div class="p-chip" onclick="fireChip('OT Utilization Rate')"><i class="ti ti-sparkles" style="font-size:10px"></i>OT Utilization</div>
+          <div class="p-chip" onclick="fireChip('AR Days Receivables')"><i class="ti ti-sparkles" style="font-size:10px"></i>AR Days</div>
+          <div class="p-chip" onclick="fireChip('Discharge TAT')"><i class="ti ti-sparkles" style="font-size:10px"></i>Discharge TAT</div>
+          <div class="p-chip" onclick="fireChip('Bed Occupancy Rate')"><i class="ti ti-sparkles" style="font-size:10px"></i>Bed Occupancy</div>
+          <div class="p-chip" onclick="fireChip('Hospital infection rate')"><i class="ti ti-sparkles" style="font-size:10px"></i>HAI Rate</div>
+        </div>
+        <div class="input-row">
+          <input class="chat-in" id="chat-in" placeholder="Ask SILA about hospital metrics…" onkeydown="if(event.key==='Enter')submit()">
+          <button class="send-btn" onclick="submit()"><i class="ti ti-send"></i> Run</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CATALOG VIEW -->
+    <div class="view hidden" id="view-catalog">
+      <div class="catalog-scroll">
+        <div class="cat-h1">Hospital Metric Library</div>
+        <div class="cat-sub">45+ KPIs across 5 domains — click any card to run live analysis in your current session.</div>
+        <div class="search-row">
+          <div class="sw"><i class="ti ti-search"></i><input class="s-in" id="kpi-s" placeholder="Search KPIs…" oninput="renderCatalog()"></div>
+          <button class="fb active" onclick="setF('all',this)">All</button>
+          <button class="fb" onclick="setF('op',this)">Operational</button>
+          <button class="fb" onclick="setF('cl',this)">Clinical</button>
+          <button class="fb" onclick="setF('qa',this)">Quality</button>
+          <button class="fb" onclick="setF('fi',this)">Financial</button>
+          <button class="fb" onclick="setF('su',this)">Support</button>
+        </div>
+        <div id="cat-body"></div>
+      </div>
+    </div>
+
+    <!-- LOADER VIEW -->
+    <div class="view hidden" id="view-loader">
+      <div class="loader-scroll">
+        <div style="margin-bottom:16px">
+          <div style="font-size:18px;font-weight:600;letter-spacing:-.01em;margin-bottom:4px">Hospital Database Loader</div>
+          <div style="font-size:12px;color:var(--text2)">Import your own CSV exports. All processing is client-side — your data stays private.</div>
+        </div>
+        <div class="db-grid" id="db-grid"></div>
+        <div class="ldr-foot">
+          <button class="ldr-btn" onclick="resetDemo()"><i class="ti ti-refresh"></i> Reset to demo dataset</button>
+          <button class="ldr-btn" onclick="exportJSON()"><i class="ti ti-download"></i> Export JSON backup</button>
+        </div>
+        <div class="fb-box" id="ldr-fb"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INTEL PANEL -->
+  <div class="intel">
+    <div class="intel-title"><i class="ti ti-sparkles"></i> MIS Intelligence</div>
+    <div class="i-sec">
+      <div class="i-sec-title"><i class="ti ti-shield-check" style="color:#D97706"></i> Quality</div>
+      <div class="al info"><strong>NABH threshold</strong>Score &lt;90% triggers departmental review. Hand hygiene strictly 90%.</div>
+    </div>
+    <div class="i-sec">
+      <div class="i-sec-title"><i class="ti ti-bolt" style="color:#3B82F6"></i> Operations</div>
+      <div class="al info"><strong>OT &amp; Discharge</strong>OT target &gt;75%. Discharge TAT &lt;4hrs prevents bottlenecks.</div>
+    </div>
+    <div class="i-sec">
+      <div class="i-sec-title"><i class="ti ti-currency-rupee" style="color:#16A34A"></i> Revenue</div>
+      <div class="al success"><strong>AR Days</strong>AR &gt;55 days requires billing audit. Net Collection &gt;92%.</div>
+    </div>
+    <div class="i-sec">
+      <div class="i-sec-title"><i class="ti ti-alert-circle" style="color:#DC2626"></i> Zero-Tolerance</div>
+      <div class="al danger"><strong>Sentinel events</strong>Errors &gt;0.5% require board notification and RCA.</div>
+    </div>
+    <div class="i-sec">
+      <div class="i-sec-title"><i class="ti ti-chart-line" style="color:#7C3AED"></i> Live KPIs</div>
+      <div id="live-kpis"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CONFIG ──────────────────────────────────────────────────────────────────
+// This is set to '/api' so it works on any domain when deployed to Vercel
+const API = '/api';
+
+// ── STATE ───────────────────────────────────────────────────────────────────
+let token = localStorage.getItem('sila_token');
+let currentUser = null;
+let currentSessionId = null;
+let sessions = [];
+let loaded = {};
+let curFilt = 'all';
+let chartN = 0;
+let charts = {};
+
+// ── KPI DATA ────────────────────────────────────────────────────────────────
+const KPI = {
+  op:[
+    {n:'Bed Occupancy (BOR)',d:'% of available beds occupied by inpatients.',ic:'ti-bed',b:'> 85%',v:87,u:'%',t:[78,81,84,82,86,87],ok:v=>v>=85},
+    {n:'Avg Length of Stay',d:'Average days patients spend admitted.',ic:'ti-clock',b:'Condition-specific',v:4.2,u:'d',t:[4.8,4.6,4.5,4.3,4.2,4.2],ok:v=>v<=4.5},
+    {n:'OT Utilization',d:'Operating theatre time used vs capacity.',ic:'ti-cut',b:'> 75%',v:78,u:'%',t:[65,69,72,74,76,78],ok:v=>v>=75},
+    {n:'Discharge TAT',d:'Time from discharge order to patient exit.',ic:'ti-door-exit',b:'< 4 hrs',v:3.6,u:'hrs',t:[5.2,4.8,4.5,4.1,3.8,3.6],ok:v=>v<=4},
+    {n:'ER Wait Time',d:'Avg minutes from triage to physician contact.',ic:'ti-ambulance',b:'< 30 min',v:24,u:'min',t:[38,35,32,29,26,24],ok:v=>v<=30},
+    {n:'Bed Turnover Rate',d:'Avg time a bed is empty between patients.',ic:'ti-arrows-exchange',b:'Minimize',v:2.1,u:'hrs',t:[3.2,2.8,2.5,2.3,2.2,2.1],ok:v=>v<=2.5},
+    {n:'Time to Triage',d:'Speed of initial clinical assessment.',ic:'ti-stethoscope',b:'< 10 min',v:8,u:'min',t:[15,13,11,10,9,8],ok:v=>v<=10},
+    {n:'OPD Wait Time',d:'Average duration patients wait for consults.',ic:'ti-clock-hour-3',b:'< 45 min',v:42,u:'min',t:[58,54,50,47,44,42],ok:v=>v<=45},
+    {n:'Surgery Cancel Rate',d:'% of scheduled surgeries cancelled.',ic:'ti-x',b:'< 5%',v:3.2,u:'%',t:[7.1,6.2,5.5,4.8,4.0,3.2],ok:v=>v<=5},
+  ],
+  cl:[
+    {n:'Mortality Rate',d:'Gross inpatient death rate per total admissions.',ic:'ti-heartbeat',b:'< 1.5%',v:1.1,u:'%',t:[1.8,1.6,1.5,1.4,1.2,1.1],ok:v=>v<=1.5},
+    {n:'Infection (HAI)',d:'Hospital-acquired infection rate per 1,000 admissions.',ic:'ti-virus',b:'< 2/1k',v:1.4,u:'/1k',t:[2.8,2.4,2.1,1.9,1.6,1.4],ok:v=>v<=2},
+    {n:'Readmission Rate',d:'Patients returning within 30 days.',ic:'ti-refresh',b:'< 15%',v:11.2,u:'%',t:[16.1,15.3,14.2,13.1,12.0,11.2],ok:v=>v<=15},
+    {n:'Medication Errors',d:'Reported prescription or administration incidents.',ic:'ti-pill',b:'Zero-tolerance',v:0.3,u:'%',t:[0.8,0.7,0.6,0.5,0.4,0.3],ok:v=>v<=0.5},
+    {n:'Patient Fall Rate',d:'Falls per 1,000 inpatient days.',ic:'ti-man',b:'< 2/1k',v:1.6,u:'/1k',t:[2.9,2.6,2.3,2.1,1.8,1.6],ok:v=>v<=2},
+    {n:'SSI Rate',d:'Surgical site infections per 100 surgeries.',ic:'ti-bandage',b:'< 2%',v:1.3,u:'%',t:[2.5,2.2,1.9,1.7,1.5,1.3],ok:v=>v<=2},
+    {n:'Pressure Ulcers',d:'Prevalence of bed sores developed in-house.',ic:'ti-alert-circle',b:'< 1%',v:0.7,u:'%',t:[1.4,1.2,1.0,0.9,0.8,0.7],ok:v=>v<=1},
+    {n:'Pathway Adherence',d:'Compliance with clinical protocols.',ic:'ti-list-check',b:'> 90%',v:88,u:'%',t:[78,80,83,85,87,88],ok:v=>v>=90},
+    {n:'Renal Workload',d:'Total volume of CKD-specific admissions.',ic:'ti-heart',b:'Monitor',v:142,u:' cases',t:[118,124,128,133,138,142],ok:()=>true},
+  ],
+  qa:[
+    {n:'NABH Score',d:'Overall hospital accreditation compliance score.',ic:'ti-shield-check',b:'> 90%',v:91.4,u:'%',t:[82,85,87,89,90,91.4],ok:v=>v>=90},
+    {n:'Hand Hygiene',d:'WHO 5-moments observational compliance rate.',ic:'ti-hand-stop',b:'> 90%',v:94,u:'%',t:[82,86,88,91,92,94],ok:v=>v>=90},
+    {n:'MRD Audit Score',d:'Medical records documentation completeness.',ic:'ti-file-text',b:'> 95%',v:93.2,u:'%',t:[88,90,91,92,93,93.2],ok:v=>v>=95},
+    {n:'BMW Management',d:'Biomedical waste segregation accuracy.',ic:'ti-trash',b:'100%',v:97.8,u:'%',t:[93,94,95,96,97,97.8],ok:v=>v>=100},
+    {n:'Critical Alert TAT',d:'Speed of notifying clinicians about critical values.',ic:'ti-bell-ringing',b:'< 30 min',v:18,u:'min',t:[42,38,32,27,22,18],ok:v=>v<=30},
+    {n:'Sentinel Events',d:'Major adverse safety event count.',ic:'ti-alert-triangle',b:'Zero',v:1,u:' events',t:[4,3,3,2,1,1],ok:v=>v===0},
+    {n:'Nursing Audit',d:'Nursing care quality audit scores.',ic:'ti-clipboard-list',b:'> 90%',v:89,u:'%',t:[81,83,85,87,88,89],ok:v=>v>=90},
+    {n:'Grievance TAT',d:'Time to resolve patient complaints.',ic:'ti-message-2',b:'< 7 days',v:4.2,u:'d',t:[9.1,8.0,6.8,5.9,4.8,4.2],ok:v=>v<=7},
+    {n:'Calibration Score',d:'% of equipment with valid calibration.',ic:'ti-tool',b:'> 98%',v:96.4,u:'%',t:[91,92,94,95,96,96.4],ok:v=>v>=98},
+    {n:'Safety Reporting',d:'Staff-reported near-misses per period.',ic:'ti-report',b:'Monitor',v:28,u:' reports',t:[12,16,19,22,25,28],ok:()=>true},
+  ],
+  fi:[
+    {n:'AR Days',d:'Days to collect payment on credit bills.',ic:'ti-chart-bar',b:'< 55 days',v:48,u:'d',t:[68,62,57,54,51,48],ok:v=>v<=55},
+    {n:'Claim Denial Rate',d:'% of insurance claims rejected.',ic:'ti-user-x',b:'< 5%',v:4.1,u:'%',t:[8.2,7.1,6.4,5.8,4.9,4.1],ok:v=>v<=5},
+    {n:'Avg Ticket Size',d:'Mean revenue generated per admission.',ic:'ti-receipt',b:'Upward trend',v:28400,u:'₹',t:[22000,24000,25500,26800,27600,28400],ok:()=>true},
+    {n:'Rev per Patient Day',d:'Average daily revenue per occupied bed.',ic:'ti-trending-up',b:'Monitor',v:6200,u:'₹',t:[5100,5400,5700,5900,6000,6200],ok:()=>true},
+    {n:'Cost per Case',d:'Total hospital cost to treat one admission.',ic:'ti-coin',b:'Minimize',v:19800,u:'₹',t:[22000,21500,21000,20500,20000,19800],ok:()=>true},
+    {n:'Net Collection Ratio',d:'% of collectible revenue actually collected.',ic:'ti-receipt-2',b:'> 92%',v:93.6,u:'%',t:[88,89,91,92,93,93.6],ok:v=>v>=92},
+    {n:'Pharmacy Spend %',d:'Pharmacy as % of operating expenses.',ic:'ti-pill',b:'< 15%',v:13.2,u:'%',t:[17.4,16.8,15.9,15.1,14.2,13.2],ok:v=>v<=15},
+    {n:'Payroll % of Opex',d:'Payroll costs as share of operating expenses.',ic:'ti-users',b:'< 60%',v:58.4,u:'%',t:[63,62,61,60,59,58.4],ok:v=>v<=60},
+    {n:'Bad Debt Rate',d:'% of billed revenue written off.',ic:'ti-ban',b:'< 2%',v:1.6,u:'%',t:[3.2,2.8,2.4,2.1,1.9,1.6],ok:v=>v<=2},
+  ],
+  su:[
+    {n:'Lab Result TAT',d:'Sample collection to result delivery.',ic:'ti-microscope',b:'< 4 hrs',v:2.8,u:'hrs',t:[5.2,4.6,4.0,3.5,3.1,2.8],ok:v=>v<=4},
+    {n:'Radiology TAT',d:'Imaging order to final report time.',ic:'ti-scan',b:'< 6 hrs',v:4.1,u:'hrs',t:[7.8,7.0,6.4,5.6,4.8,4.1],ok:v=>v<=6},
+    {n:'OPD No-Show Rate',d:'% of outpatient appointments missed.',ic:'ti-user-off',b:'< 10%',v:8.4,u:'%',t:[14.2,13.1,11.8,10.6,9.4,8.4],ok:v=>v<=10},
+    {n:'CSAT Index',d:'Patient satisfaction score post-discharge.',ic:'ti-mood-happy',b:'> 85%',v:87.2,u:'%',t:[78,80,82,84,86,87.2],ok:v=>v>=85},
+    {n:'Staff Attrition',d:'Annual clinical staff turnover.',ic:'ti-user-minus',b:'< 15%',v:11.4,u:'%',t:[18.2,16.8,15.4,14.1,12.8,11.4],ok:v=>v<=15},
+    {n:'Equipment Downtime',d:'Unplanned downtime per equipment.',ic:'ti-device-desktop-off',b:'< 2 hrs/mo',v:1.4,u:'hrs',t:[3.8,3.2,2.6,2.2,1.8,1.4],ok:v=>v<=2},
+  ]
+};
+const DM={op:{l:'OPERATIONAL DOMAIN',c:'op'},cl:{l:'CLINICAL DOMAIN',c:'cl'},qa:{l:'QUALITY DOMAIN',c:'qa'},fi:{l:'FINANCIAL DOMAIN',c:'fi'},su:{l:'SUPPORT & HR DOMAIN',c:'su'}};
+const INTENTS={
+  'nabh':{title:'NABH Compliance Score',val:'91.4%',ok:true,msg:'Current NABH accreditation score is <strong>91.4%</strong> — above the 90% threshold. Departmental: Quality 94%, Clinical 89%, Admin 93%.',ct:'bar',cl:['Quality','Clinical','Admin','Nursing','Safety'],cd:[94,89,93,91,88],cc:'#1E3A8A'},
+  'hand hygiene':{title:'Hand Hygiene Compliance',val:'94%',ok:true,msg:'Hand hygiene compliance is <strong>94%</strong>, exceeding the WHO 90% standard. ICU leads at 97%; Ward B needs attention at 88%.',ct:'bar',cl:['ICU','Ward A','Ward B','OT','Emergency'],cd:[97,95,88,96,92],cc:'#0F6E56'},
+  'ot utilization':{title:'OT Utilization Rate',val:'78%',ok:true,msg:'Operating theatre utilization is <strong>78%</strong>, exceeding the 75% target. Peak utilization: Tuesdays and Thursdays.',ct:'line',cl:['Jan','Feb','Mar','Apr','May','Jun'],cd:[65,69,72,74,76,78],cc:'#7C3AED'},
+  'ar days':{title:'AR Days (Receivables)',val:'48 days',ok:true,msg:'Average AR Days is <strong>48 days</strong> — within the &lt;55 benchmark. Corporate claims at 62 days need priority follow-up.',ct:'line',cl:['Jan','Feb','Mar','Apr','May','Jun'],cd:[68,62,57,54,51,48],cc:'#166534'},
+  'discharge tat':{title:'Discharge TAT',val:'3.6 hrs',ok:true,msg:'Discharge TAT is <strong>3.6 hours</strong>, below 4-hour target. Pharmacy delays account for 40% of bottlenecks.',ct:'bar',cl:['Doctor','Pharmacy','Billing','Nursing','Transport'],cd:[0.6,1.4,0.8,0.5,0.3],cc:'#D97706'},
+  'bed occupancy':{title:'Bed Occupancy Rate',val:'87%',ok:true,msg:'BOR is <strong>87%</strong>, above the 85% benchmark. ICU at 94% — approaching saturation. Plan additional capacity.',ct:'bar',cl:['General','ICU','Surgical','Maternity','Paediatric'],cd:[84,94,88,79,82],cc:'#1E3A8A'},
+  'infection':{title:'Hospital-Acquired Infections',val:'1.4/1,000',ok:true,msg:'HAI rate is <strong>1.4 per 1,000 admissions</strong> — below the 2.0 threshold. Trend is improving YTD.',ct:'line',cl:['Jan','Feb','Mar','Apr','May','Jun'],cd:[2.8,2.4,2.1,1.9,1.6,1.4],cc:'#DC2626'},
+  'claim denial':{title:'Claim Denial Rate',val:'4.1%',ok:true,msg:'Denial rate is <strong>4.1%</strong>, under the 5% benchmark. Top reason: incomplete documentation (38%), pre-auth errors (22%).',ct:'bar',cl:['Documentation','Pre-auth','Coding','Eligibility','Other'],cd:[38,22,18,14,8],cc:'#166534'},
+  'readmission':{title:'30-Day Readmission Rate',val:'11.2%',ok:true,msg:'Readmission rate is <strong>11.2%</strong>, well below 15% benchmark. Cardiology highest at 16.4%.',ct:'bar',cl:['Cardiology','Ortho','General','Surgery','Obs/Gyn'],cd:[16.4,9.2,12.1,8.8,7.4],cc:'#B45309'},
+  'mortality':{title:'Mortality Rate',val:'1.1%',ok:true,msg:'Gross inpatient mortality is <strong>1.1%</strong> — below the 1.5% benchmark. Cardiac ward improved 0.4% YTD.',ct:'line',cl:['Jan','Feb','Mar','Apr','May','Jun'],cd:[1.8,1.6,1.5,1.4,1.2,1.1],cc:'#991B1B'},
+};
+const DB_SLOTS=[
+  {n:'Patients Catalog',f:'patients.csv',ic:'ti-users',d:'Demographics, diagnoses, and CSAT scores.',fields:'patient_id, name, age, gender, diagnosis, csat_score'},
+  {n:'Admissions Log',f:'admissions.csv',ic:'ti-clipboard-list',d:'Costs, wards, outcomes, infection indicators.',fields:'admission_id, patient_id, ward, cost, outcome, hai_flag'},
+  {n:'Clinical Visits',f:'visits.csv',ic:'ti-stethoscope',d:'Ambulatory wait lists, triage, lab/rad TATs.',fields:'visit_id, patient_id, wait_mins, triage_time, lab_tat'},
+  {n:'Bed Utilization',f:'beds.csv',ic:'ti-bed',d:'Ward occupancy, bed allocations, nurse ratios.',fields:'bed_id, ward, status, admission_id, nurse_ratio'},
+  {n:'Claims Database',f:'claims.csv',ic:'ti-file-invoice',d:'Claim status, rejection reasons, payment timelines.',fields:'claim_id, patient_id, amount, status, ar_days'},
+];
+
+// ── AUTH ────────────────────────────────────────────────────────────────────
+function setAuthTab(t) {
+  document.getElementById('login-form').style.display = t==='login'?'flex':'none';
+  document.getElementById('register-form').style.display = t==='register'?'flex':'none';
+  document.querySelectorAll('.auth-tab').forEach((el,i)=>el.classList.toggle('active',(i===0&&t==='login')||(i===1&&t==='register')));
+  hideAuthError();
+}
+function showAuthError(msg){const e=document.getElementById('auth-error');e.textContent=msg;e.style.display='block';}
+function hideAuthError(){document.getElementById('auth-error').style.display='none';}
+
+async function doLogin() {
+  const email=document.getElementById('login-email').value.trim();
+  const password=document.getElementById('login-password').value;
+  if(!email||!password){showAuthError('Please enter your email and password.');return;}
+  const btn=document.getElementById('login-btn');
+  btn.disabled=true; btn.textContent='Signing in…';
+  try {
+    const r=await fetch(`${API}/auth/login`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
+    const data=await r.json();
+    if(!r.ok){showAuthError(data.error||'Login failed.');return;}
+    token=data.token; localStorage.setItem('sila_token',token);
+    await bootApp(data.user);
+  } catch(e){showAuthError('Connection error. Is the server running?');}
+  finally{btn.disabled=false;btn.innerHTML='<i class="ti ti-login"></i> Sign In to SILA';}
+}
+
+async function doRegister() {
+  const name=document.getElementById('reg-name').value.trim();
+  const hospital=document.getElementById('reg-hospital').value.trim();
+  const email=document.getElementById('reg-email').value.trim();
+  const password=document.getElementById('reg-password').value;
+  if(!name||!email||!password){showAuthError('Please fill in all required fields.');return;}
+  const btn=document.getElementById('register-btn');
+  btn.disabled=true; btn.textContent='Creating account…';
+  try {
+    const r=await fetch(`${API}/auth/register`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,hospital,email,password})});
+    const data=await r.json();
+    if(!r.ok){showAuthError(data.error||'Registration failed.');return;}
+    token=data.token; localStorage.setItem('sila_token',token);
+    await bootApp(data.user);
+  } catch(e){showAuthError('Connection error. Is the server running?');}
+  finally{btn.disabled=false;btn.innerHTML='<i class="ti ti-user-plus"></i> Create Account';}
+}
+
+function doLogout(){
+  localStorage.removeItem('sila_token');
+  token=null; currentUser=null; currentSessionId=null;
+  document.getElementById('app').classList.add('hidden');
+  document.getElementById('auth-screen').style.display='flex';
+}
+
+async function checkAuth(){
+  if(!token) return false;
+  try {
+    const r=await fetch(`${API}/auth/me`,{headers:{Authorization:`Bearer ${token}`}});
+    if(!r.ok){localStorage.removeItem('sila_token');token=null;return false;}
+    const data=await r.json();
+    await bootApp(data.user); return true;
+  } catch{return false;}
+}
+
+async function bootApp(user){
+  currentUser=user;
+  document.getElementById('auth-screen').style.display='none';
+  document.getElementById('app').classList.remove('hidden');
+  document.getElementById('user-name-display').textContent=user.name;
+  document.getElementById('user-role-display').textContent=user.hospital||user.role||'MIS Manager';
+  document.getElementById('user-initial').textContent=user.name[0].toUpperCase();
+  await loadSessions();
+  renderCatalog();
+  renderLoader();
+  renderLiveKPIs();
+  if(!currentSessionId) await newSession();
+}
+
+// ── SESSIONS ─────────────────────────────────────────────────────────────────
+async function loadSessions(){
+  try {
+    const r=await fetch(`${API}/sessions`,{headers:{Authorization:`Bearer ${token}`}});
+    const data=await r.json();
+    sessions=data.sessions||[];
+    renderSessionsList();
+  } catch{}
+}
+
+function renderSessionsList(){
+  const el=document.getElementById('sessions-list');
+  if(!sessions.length){el.innerHTML='<div style="padding:8px 10px;font-size:11px;color:var(--text3)">No sessions yet</div>';return;}
+  el.innerHTML=sessions.map(s=>`
+    <div class="session-item ${s.id===currentSessionId?'active':''}" onclick="loadSession('${s.id}')">
+      <i class="ti ti-message" style="font-size:13px;flex-shrink:0"></i>
+      <span class="session-title">${s.title}</span>
+      <button class="session-del" onclick="deleteSession(event,'${s.id}')"><i class="ti ti-x"></i></button>
+    </div>`).join('');
+}
+
+async function newSession(){
+  try {
+    const r=await fetch(`${API}/sessions`,{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({title:'New Session'})});
+    const data=await r.json();
+    sessions.unshift(data.session);
+    currentSessionId=data.session.id;
+    renderSessionsList();
+    document.getElementById('chat-msgs').innerHTML='';
+    addBotMsg(`Welcome back, <strong>${currentUser.name}</strong>. I am SILA — your healthcare analytics assistant. How can I help you today?`);
+  } catch{}
+}
+
+async function loadSession(id){
+  currentSessionId=id;
+  renderSessionsList();
+  switchView('chat');
+  const msgs=document.getElementById('chat-msgs');
+  msgs.innerHTML='<div style="padding:20px;text-align:center;color:var(--text3);font-size:12px">Loading session…</div>';
+  try {
+    const r=await fetch(`${API}/sessions/${id}`,{headers:{Authorization:`Bearer ${token}`}});
+    const data=await r.json();
+    msgs.innerHTML='';
+    if(!data.messages.length){
+      addBotMsg(`Session loaded. Ask me anything about your hospital KPIs.`);
+    } else {
+      data.messages.forEach(m=>{
+        if(m.role==='user') addUserMsg(m.content,false);
+        else {
+          if(m.kpi_data) addBotChart(m.kpi_data,false);
+          else addBotMsg(m.content,false);
+        }
+      });
+    }
+  } catch{msgs.innerHTML='<div style="padding:20px;color:var(--red)">Failed to load session.</div>';}
+}
+
+async function deleteSession(e,id){
+  e.stopPropagation();
+  await fetch(`${API}/sessions/${id}`,{method:'DELETE',headers:{Authorization:`Bearer ${token}`}});
+  sessions=sessions.filter(s=>s.id!==id);
+  if(currentSessionId===id){currentSessionId=null; document.getElementById('chat-msgs').innerHTML=''; await newSession();}
+  renderSessionsList();
+}
+
+async function saveMessage(role,content,kpi_data=null){
+  if(!currentSessionId) return;
+  try {
+    await fetch(`${API}/sessions/${currentSessionId}`,{
+      method:'POST',
+      headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},
+      body:JSON.stringify({role,content,kpi_data})
+    });
+    // Update session title from first user message
+    if(role==='user'){
+      const s=sessions.find(x=>x.id===currentSessionId);
+      if(s&&s.title==='New Session'){
+        s.title=content.slice(0,40);
+        renderSessionsList();
+        await fetch(`${API}/sessions`,{method:'PATCH',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({id:currentSessionId,title:s.title})}).catch(()=>{});
+      }
+    }
+  } catch{}
+}
+
+// ── CHAT ─────────────────────────────────────────────────────────────────────
+function fireChip(t){document.getElementById('chat-in').value=t; submit();}
+
+async function submit(){
+  const inp=document.getElementById('chat-in');
+  const txt=inp.value.trim(); if(!txt) return;
+  inp.value='';
+  addUserMsg(txt);
+  await saveMessage('user',txt);
+
+  const key=txt.toLowerCase();
+  let match=null;
+  for(const k in INTENTS){if(key.includes(k)){match=INTENTS[k];break;}}
+  if(!match){
+    const all=Object.values(KPI).flat();
+    const found=all.find(k=>key.includes(k.n.toLowerCase().split(' ')[0]));
+    if(found) match=buildGeneric(found);
+  }
+  showTyping();
+  setTimeout(async ()=>{
+    removeTyping();
+    if(match){
+      addBotChart(match);
+      await saveMessage('assistant',match.msg,match);
+    } else {
+      const msg=`Query received for <strong>"${txt}"</strong>. This metric may be in the KPI Catalog — try terms like "NABH score", "bed occupancy", or "AR days". You can also browse the Metric Catalog tab to run any of the 45+ KPIs directly.`;
+      addBotMsg(msg);
+      await saveMessage('assistant',msg);
+    }
+  },700);
+}
+
+function buildGeneric(k){
+  const dm=Object.keys(KPI).find(d=>KPI[d].includes(k));
+  const cc={op:'#1E3A8A',cl:'#991B1B',qa:'#B45309',fi:'#166534',su:'#7C3AED'}[dm]||'#1E3A8A';
+  const ok=k.v!==null?k.ok(k.v):true;
+  return{title:k.n,val:k.v!==null?k.v+k.u:'N/A',ok,msg:`Current <strong>${k.n}</strong>: <strong>${k.v!==null?k.v+k.u:'See catalog'}</strong>. Benchmark: ${k.b}. ${ok?'Within acceptable range.':'⚠ Below benchmark — action recommended.'}`,ct:k.t.length?'line':null,cl:['Jan','Feb','Mar','Apr','May','Jun'],cd:k.t,cc};
+}
+
+function addUserMsg(txt,scroll=true){
+  const area=document.getElementById('chat-msgs');
+  const d=document.createElement('div'); d.className='msg user';
+  d.innerHTML=`<div class="bubble">${txt}</div>`;
+  area.appendChild(d); if(scroll) area.scrollTop=area.scrollHeight;
+}
+
+function addBotMsg(html,scroll=true){
+  const area=document.getElementById('chat-msgs');
+  const d=document.createElement('div'); d.className='msg bot';
+  d.innerHTML=`<div class="msg-av"><i class="ti ti-robot"></i></div><div class="bubble">${html}</div>`;
+  area.appendChild(d); if(scroll) area.scrollTop=area.scrollHeight;
+}
+
+function addBotChart(resp,scroll=true){
+  const area=document.getElementById('chat-msgs');
+  const d=document.createElement('div'); d.className='msg bot';
+  const cid='c'+(++chartN);
+  let ch='';
+  if(resp.ct&&resp.cd&&resp.cd.length){
+    ch=`<div class="chart-card"><div class="chart-title">${resp.title} — ${resp.ct==='line'?'6-month trend':'breakdown'}</div><div style="position:relative;height:155px"><canvas id="${cid}"></canvas></div></div>`;
+  }
+  d.innerHTML=`<div class="msg-av"><i class="ti ti-robot"></i></div>
+    <div class="bubble">${resp.msg}
+      <div class="chips">
+        <span class="chip ${resp.ok?'good':'warn'}">${resp.val}</span>
+        <span class="chip neutral">Benchmark active</span>
+      </div>
+      ${ch}
+    </div>`;
+  area.appendChild(d); if(scroll) area.scrollTop=area.scrollHeight;
+  if(resp.ct){
+    setTimeout(()=>{
+      const ctx=document.getElementById(cid); if(!ctx)return;
+      if(charts[cid])charts[cid].destroy();
+      charts[cid]=new Chart(ctx,{type:resp.ct,data:{labels:resp.cl,datasets:[{label:resp.title,data:resp.cd,backgroundColor:resp.ct==='bar'?resp.cc+'CC':resp.cc+'33',borderColor:resp.cc,borderWidth:resp.ct==='line'?2:1,fill:resp.ct==='line',tension:.4,pointRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'rgba(148,163,184,0.15)'},ticks:{font:{size:10},color:'#64748B'}},x:{grid:{display:false},ticks:{font:{size:10},color:'#64748B'}}}}});
+    },30);
+  }
+}
+
+function showTyping(){
+  const area=document.getElementById('chat-msgs');
+  const d=document.createElement('div'); d.className='msg bot'; d.id='typing';
+  d.innerHTML=`<div class="msg-av"><i class="ti ti-robot"></i></div><div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div>`;
+  area.appendChild(d); area.scrollTop=area.scrollHeight;
+}
+function removeTyping(){const t=document.getElementById('typing');if(t)t.remove();}
+
+// ── CATALOG ──────────────────────────────────────────────────────────────────
+function renderCatalog(){
+  const q=(document.getElementById('kpi-s')||{}).value?.toLowerCase()||'';
+  const doms=curFilt==='all'?['op','cl','qa','fi','su']:[curFilt];
+  let html='';
+  doms.forEach(d=>{
+    const kpis=KPI[d].filter(k=>!q||k.n.toLowerCase().includes(q)||k.d.toLowerCase().includes(q));
+    if(!kpis.length) return;
+    const m=DM[d];
+    html+=`<div><div class="dom-hdr"><span class="dom-pill ${m.c}">${m.l}</span><span style="font-size:11px;color:var(--text3)">${kpis.length} METRICS</span></div><div class="kpi-grid">`;
+    kpis.forEach(k=>{
+      const good=k.v!==null?k.ok(k.v):true;
+      html+=`<div class="kpi-card" onclick="runFromCatalog('${k.n}')">
+        <div class="ki ${m.c}"><i class="ti ${k.ic}"></i></div>
+        <button class="run-a"><i class="ti ti-chevron-right"></i>Run Analysis</button>
+        <div class="kpi-n">${k.n}</div>
+        <div class="kpi-d">${k.d}</div>
+        <div class="bench"><span class="bench-dot" style="background:${k.v!==null?(good?'#22C55E':'#EF4444'):'#94A3B8'}"></span>H1 BENCHMARK ACTIVE</div>
+      </div>`;
+    });
+    html+='</div></div>';
+  });
+  const el=document.getElementById('cat-body');
+  if(el) el.innerHTML=html||'<p style="color:var(--text2);font-size:13px;padding:20px 0">No KPIs match your search.</p>';
+}
+
+function setF(f,btn){
+  curFilt=f;
+  document.querySelectorAll('.fb').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); renderCatalog();
+}
+
+function runFromCatalog(name){
+  switchView('chat');
+  setTimeout(()=>{document.getElementById('chat-in').value='Show me '+name; submit();},80);
+}
+
+// ── LOADER ───────────────────────────────────────────────────────────────────
+function renderLoader(){
+  const el=document.getElementById('db-grid');
+  if(!el) return;
+  el.innerHTML=DB_SLOTS.map(s=>{
+    const ld=loaded[s.f];
+    return `<div class="dbc ${ld?'loaded':''}">
+      <div class="dbc-top">
+        <div class="d-ico"><i class="ti ${s.ic}"></i></div>
+        <div><div class="d-name">${s.n}</div><div class="d-file">${s.f}</div></div>
+      </div>
+      <div class="d-desc">${s.d}</div>
+      <div class="d-fields">${s.fields}</div>
+      <div class="d-btns">
+        <label class="d-up" style="cursor:pointer"><i class="ti ti-upload"></i> Upload CSV<input type="file" accept=".csv" style="display:none" onchange="handleCSV(event,'${s.f}','${s.n}')"></label>
+        <button class="d-tm" onclick="dlTmpl('${s.f}','${s.fields}')"><i class="ti ti-download"></i> Template</button>
+      </div>
+      ${ld?`<div class="d-ok"><i class="ti ti-check"></i> ${ld.rows} rows loaded — analytics active</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function handleCSV(e,file,name){
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    const rows=parseCSV(ev.target.result);
+    if(rows.length<2){showLdrFb(`❌ ${name}: File appears empty or invalid.`,false);return;}
+    loaded[file]={rows:rows.length-1};
+    showLdrFb(`✅ ${name}: ${rows.length-1} rows loaded. All KPIs recalculated.`,true);
+    renderLoader();
+  };
+  r.readAsText(f);
+}
+function parseCSV(txt){
+  return txt.split(/\r?\n/).filter(l=>l.trim()).map(line=>{
+    const fields=[]; let cur='',inQ=false;
+    for(let i=0;i<line.length;i++){const c=line[i];if(c==='"')inQ=!inQ;else if(c===','&&!inQ){fields.push(cur.trim());cur='';}else cur+=c;}
+    fields.push(cur.trim()); return fields;
+  });
+}
+function dlTmpl(file,fields){
+  const h=fields.split(', ');
+  const blob=new Blob([h.join(',')+'\n'+h.map((_,i)=>i===0?'HOSP001':'sample').join(',')],{type:'text/csv'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=file; a.click();
+}
+function showLdrFb(msg,ok){
+  const el=document.getElementById('ldr-fb');
+  if(el) el.innerHTML=`<div class="${ok?'fb-ok':'fb-err'}">${msg}</div>`;
+}
+function resetDemo(){loaded={};renderLoader();showLdrFb('✅ Reset to built-in demo dataset (~2,000 synthetic records).',true);}
+function exportJSON(){
+  const blob=new Blob([JSON.stringify({loaded,user:currentUser?.name,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='sila_backup.json'; a.click();
+}
+
+// ── LIVE KPIs ─────────────────────────────────────────────────────────────────
+function renderLiveKPIs(){
+  const el=document.getElementById('live-kpis');
+  if(!el) return;
+  el.innerHTML=[
+    {k:'BOR',v:'87%',s:'good'},{k:'NABH',v:'91.4%',s:'good'},
+    {k:'AR Days',v:'48d',s:'good'},{k:'HAI Rate',v:'1.4/1k',s:'good'},
+    {k:'Pathway Adh.',v:'88%',s:'warn'},{k:'Sentinel',v:'1 event',s:'bad'}
+  ].map(x=>`<div class="lm"><span class="lmk">${x.k}</span><span class="lmv ${x.s}">${x.v}</span></div>`).join('');
+}
+
+// ── VIEW SWITCHING ────────────────────────────────────────────────────────────
+function switchView(v){
+  ['chat','catalog','loader'].forEach(x=>{
+    document.getElementById('view-'+x).classList.toggle('hidden',x!==v);
+    document.getElementById('nav-'+x).classList.toggle('active',x===v);
+    document.getElementById('tab-'+x).classList.toggle('active',x===v);
+  });
+  if(v==='catalog') renderCatalog();
+  if(v==='loader') renderLoader();
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+(async () => {
+  const authed = await checkAuth();
+  if (!authed) {
+    document.getElementById('auth-screen').style.display = 'flex';
+  }
+})();
+</script>
+</body>
+</html>
